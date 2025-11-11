@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eterna Backend - WebSocket Demo</title>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+        
+        .status.connected {
+            background: #10b981;
+        }
+        
+        .status.disconnected {
+            background: #ef4444;
+        }
+        
+        .controls {
+            padding: 20px;
+            background: #f3f4f6;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        button.primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        button.primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        button.danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        button.danger:hover {
+            background: #dc2626;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            background: #f9fafb;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 {
+            color: #6b7280;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #111827;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .updates-section {
+            margin-top: 20px;
+        }
+        
+        .section-title {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #111827;
+            font-weight: 600;
+        }
+        
+        .updates-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        
+        .update-item {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .update-item:last-child {
+            border-bottom: none;
+        }
+        
+        .update-item.price_update {
+            background: #dbeafe;
+        }
+        
+        .update-item.volume_spike {
+            background: #fef3c7;
+        }
+        
+        .update-item.new_token {
+            background: #d1fae5;
+        }
+        
+        .update-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .update-type {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .update-type.price_update {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .update-type.volume_spike {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .update-type.new_token {
+            background: #10b981;
+            color: white;
+        }
+        
+        .timestamp {
+            color: #6b7280;
+            font-size: 0.9em;
+        }
+        
+        .token-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .token-name {
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .token-ticker {
+            color: #6b7280;
+            font-size: 0.9em;
+        }
+        
+        .change {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        
+        .change.positive {
+            color: #10b981;
+        }
+        
+        .change.negative {
+            color: #ef4444;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .tokens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .token-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            transition: transform 0.2s;
+        }
+        
+        .token-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .token-card-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .token-details {
+            font-size: 0.9em;
+            color: #6b7280;
+        }
+        
+        .token-details div {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Eterna Backend - Real-time Token Monitor</h1>
+            <div id="status" class="status disconnected">Disconnected</div>
+        </header>
+        
+        <div class="controls">
+            <div class="button-group">
+                <button id="connectBtn" class="primary">Connect</button>
+                <button id="disconnectBtn" class="danger" disabled>Disconnect</button>
+                <button id="subscribeBtn" class="primary" disabled>Subscribe to Updates</button>
+                <button id="unsubscribeBtn" class="danger" disabled>Unsubscribe</button>
+                <button id="clearBtn" class="danger">Clear Updates</button>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total Tokens</h3>
+                <div class="value" id="totalTokens">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Updates Received</h3>
+                <div class="value" id="updatesCount">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Price Updates</h3>
+                <div class="value" id="priceUpdates">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Volume Spikes</h3>
+                <div class="value" id="volumeSpikes">0</div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="section-title">📊 Live Tokens</div>
+            <div id="tokensGrid" class="tokens-grid"></div>
+            
+            <div class="updates-section">
+                <div class="section-title">📡 Real-time Updates</div>
+                <div id="updatesList" class="updates-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const serverUrl = 'http://localhost:3000'; // Change this to your deployed URL
+        let socket = null;
+        let updateCount = 0;
+        let priceUpdateCount = 0;
+        let volumeSpikeCount = 0;
+        let tokens = [];
+
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const subscribeBtn = document.getElementById('subscribeBtn');
+        const unsubscribeBtn = document.getElementById('unsubscribeBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const statusEl = document.getElementById('status');
+        const updatesList = document.getElementById('updatesList');
+        const tokensGrid = document.getElementById('tokensGrid');
+
+        connectBtn.addEventListener('click', connect);
+        disconnectBtn.addEventListener('click', disconnect);
+        subscribeBtn.addEventListener('click', subscribe);
+        unsubscribeBtn.addEventListener('click', unsubscribe);
+        clearBtn.addEventListener('click', clearUpdates);
+
+        function connect() {
+            socket = io(serverUrl);
+
+            socket.on('connect', () => {
+                updateStatus(true);
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                subscribeBtn.disabled = false;
+                addLog('Connected to server');
+            });
+
+            socket.on('disconnect', () => {
+                updateStatus(false);
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                subscribeBtn.disabled = true;
+                unsubscribeBtn.disabled = true;
+                addLog('Disconnected from server');
+            });
+
+            socket.on('initial:tokens', (data) => {
+                tokens = data.tokens;
+                document.getElementById('totalTokens').textContent = tokens.length;
+                renderTokens();
+                addLog(`Received ${tokens.length} initial tokens`);
+            });
+
+            socket.on('token:update', (update) => {
+                handleUpdate(update);
+            });
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+            }
+        }
+
+        function subscribe() {
+            if (socket) {
+                socket.emit('subscribe:tokens');
+                subscribeBtn.disabled = true;
+                unsubscribeBtn.disabled = false;
+                addLog('Subscribed to token updates');
+            }
+        }
+
+        function unsubscribe() {
+            if (socket) {
+                socket.emit('unsubscribe:tokens');
+                subscribeBtn.disabled = false;
+                unsubscribeBtn.disabled = true;
+                addLog('Unsubscribed from token updates');
+            }
+        }
+
+        function updateStatus(connected) {
+            if (connected) {
+                statusEl.className = 'status connected';
+                statusEl.textContent = '● Connected';
+            } else {
+                statusEl.className = 'status disconnected';
+                statusEl.textContent = '● Disconnected';
+            }
+        }
+
+        function handleUpdate(update) {
+            updateCount++;
+            document.getElementById('updatesCount').textContent = updateCount;
+
+            if (update.type === 'price_update') {
+                priceUpdateCount++;
+                document.getElementById('priceUpdates').textContent = priceUpdateCount;
+            } else if (update.type === 'volume_spike') {
+                volumeSpikeCount++;
+                document.getElementById('volumeSpikes').textContent = volumeSpikeCount;
+            }
+
+            // Update token in list
+            const index = tokens.findIndex(t => t.token_address === update.token.token_address);
+            if (index !== -1) {
+                tokens[index] = update.token;
+            } else {
+                tokens.unshift(update.token);
+                document.getElementById('totalTokens').textContent = tokens.length;
+            }
+            renderTokens();
+
+            // Add update to list
+            const updateItem = document.createElement('div');
+            updateItem.className = `update-item ${update.type}`;
+            
+            const change = update.change_percentage || 0;
+            const changeClass = change >= 0 ? 'positive' : 'negative';
+            const changeSign = change >= 0 ? '+' : '';
+            
+            updateItem.innerHTML = `
+                <div class="update-header">
+                    <span class="update-type ${update.type}">${update.type.replace('_', ' ')}</span>
+                    <span class="timestamp">${new Date(update.timestamp).toLocaleTimeString()}</span>
+                </div>
+                <div class="token-info">
+                    <div>
+                        <div class="token-name">${update.token.token_name}</div>
+                        <div class="token-ticker">${update.token.token_ticker}</div>
+                    </div>
+                    ${update.change_percentage ? `<div class="change ${changeClass}">${changeSign}${change.toFixed(2)}%</div>` : ''}
+                </div>
+            `;
+            
+            updatesList.insertBefore(updateItem, updatesList.firstChild);
+            
+            // Keep only last 50 updates
+            while (updatesList.children.length > 50) {
+                updatesList.removeChild(updatesList.lastChild);
+            }
+        }
+
+        function renderTokens() {
+            tokensGrid.innerHTML = '';
+            tokens.slice(0, 20).forEach(token => {
+                const card = document.createElement('div');
+                card.className = 'token-card';
+                
+                const priceChange = token.price_1hr_change || 0;
+                const changeClass = priceChange >= 0 ? 'positive' : 'negative';
+                
+                card.innerHTML = `
+                    <div class="token-card-header">
+                        <div>
+                            <div class="token-name">${token.token_name}</div>
+                            <div class="token-ticker">${token.token_ticker}</div>
+                        </div>
+                        <div class="change ${changeClass}">${priceChange.toFixed(2)}%</div>
+                    </div>
+                    <div class="token-details">
+                        <div>💰 Price: ${token.price_sol.toExponential(4)} SOL</div>
+                        <div>📊 Volume: ${token.volume_sol.toFixed(2)} SOL</div>
+                        <div>💎 Market Cap: ${token.market_cap_sol.toFixed(2)} SOL</div>
+                        <div>🔄 Protocol: ${token.protocol}</div>
+                    </div>
+                `;
+                
+                tokensGrid.appendChild(card);
+            });
+        }
+
+        function clearUpdates() {
+            updatesList.innerHTML = '';
+            updateCount = 0;
+            priceUpdateCount = 0;
+            volumeSpikeCount = 0;
+            document.getElementById('updatesCount').textContent = '0';
+            document.getElementById('priceUpdates').textContent = '0';
+            document.getElementById('volumeSpikes').textContent = '0';
+            addLog('Updates cleared');
+        }
+
+        function addLog(message) {
+            console.log(`[${new Date().toLocaleTimeString()}] ${message}`);
+        }
+    </script>
+</body>
+</html>

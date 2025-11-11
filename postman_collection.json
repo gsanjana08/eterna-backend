@@ -1,0 +1,354 @@
+{
+  "info": {
+    "name": "Eterna Backend API",
+    "description": "Real-time meme coin data aggregation service API collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health"]
+            },
+            "description": "Get service health status including cache and memory information"
+          },
+          "response": []
+        },
+        {
+          "name": "Readiness Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health/ready",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health", "ready"]
+            },
+            "description": "Check if service is ready to accept requests"
+          },
+          "response": []
+        },
+        {
+          "name": "Liveness Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health/live",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health", "live"]
+            },
+            "description": "Check if service is alive"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tokens",
+      "item": [
+        {
+          "name": "Get All Tokens (Default)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tokens",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tokens"]
+            },
+            "description": "Get all tokens with default pagination (20 items)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Tokens - Sort by Volume",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tokens?sortBy=volume&sortOrder=desc&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tokens"],
+              "query": [
+                {
+                  "key": "sortBy",
+                  "value": "volume"
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "desc"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get tokens sorted by volume in descending order"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Tokens - Sort by Market Cap",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tokens?sortBy=market_cap&sortOrder=desc&limit=15",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tokens"],
+              "query": [
+                {
+                  "key": "sortBy",
+                  "value": "market_cap"
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "desc"
+                },
+                {
+                  "key": "limit",
+                  "value": "15"
+                }
+              ]
+            },
+            "description": "Get tokens sorted by market cap"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Tokens - Filter by Volume",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tokens?minVolume=100&sortBy=volume&sortOrder=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tokens"],
+              "query": [
+                {
+                  "key": "minVolume",
+                  "value": "100"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "volume"
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "desc"
+                }
+              ]
+            },
+            "description": "Get tokens with minimum volume of 100 SOL"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Tokens - 1 Hour Period",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tokens?timePeriod=1h&sortBy=price_change&sortOrder=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tokens"],
+              "query": [
+                {
+                  "key": "timePeriod",
+                  "value": "1h"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "price_change"
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "desc"
+                }
+              ]
+            },
+            "description": "Get tokens with 1 hour price changes"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Tokens - 24 Hour Period",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tokens?timePeriod=24h&sortBy=price_change&sortOrder=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tokens"],
+              "query": [
+                {
+                  "key": "timePeriod",
+                  "value": "24h"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "price_change"
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "desc"
+                }
+              ]
+            },
+            "description": "Get tokens with 24 hour price changes"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Tokens - With Pagination",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tokens?limit=5&cursor=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tokens"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "5"
+                },
+                {
+                  "key": "cursor",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Get first page of tokens with cursor pagination"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Tokens - Next Page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tokens?limit=5&cursor=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tokens"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "5"
+                },
+                {
+                  "key": "cursor",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Get next page using cursor from previous response"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Tokens - Complex Filter",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tokens?minVolume=50&minMarketCap=500&sortBy=liquidity&sortOrder=desc&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tokens"],
+              "query": [
+                {
+                  "key": "minVolume",
+                  "value": "50"
+                },
+                {
+                  "key": "minMarketCap",
+                  "value": "500"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "liquidity"
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "desc"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get tokens with multiple filters applied"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Token by Address",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tokens/:address",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tokens", ":address"],
+              "variable": [
+                {
+                  "key": "address",
+                  "value": "So11111111111111111111111111111111111111112"
+                }
+              ]
+            },
+            "description": "Get specific token by its address (example: SOL token)"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token Data",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tokens/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tokens", "refresh"]
+            },
+            "description": "Force refresh token data from all sources"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Root",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/",
+          "host": ["{{baseUrl}}"],
+          "path": [""]
+        },
+        "description": "Get API information and available endpoints"
+      },
+      "response": []
+    }
+  ]
+}

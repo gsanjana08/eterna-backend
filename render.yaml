@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: eterna-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: CACHE_ENABLED
+        value: false
+      - key: REDIS_HOST
+        value: localhost
+      - key: API_RATE_LIMIT
+        value: 300
+      - key: WS_UPDATE_INTERVAL
+        value: 5000
+      - key: LOG_LEVEL
+        value: info
+    healthCheckPath: /api/health/live
